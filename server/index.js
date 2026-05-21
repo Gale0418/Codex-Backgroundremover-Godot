@@ -33,7 +33,7 @@ async function zipDirectory(sourceDir, outputPath) {
   });
 }
 
-export async function createApp() {
+export async function createApp({ assertTools = assertFfmpegAvailable } = {}) {
   await fs.mkdir(config.uploadDir, { recursive: true });
   await fs.mkdir(config.exportDir, { recursive: true });
 
@@ -44,10 +44,24 @@ export async function createApp() {
 
   app.get("/api/health", async (_req, res) => {
     try {
-      const tools = await assertFfmpegAvailable();
-      res.json({ ok: true, app: "godot-video-background-remover", tools });
+      const tools = await assertTools();
+      res.json({
+        ok: true,
+        app: "godot-video-background-remover",
+        tools: {
+          available: true,
+          ...tools
+        }
+      });
     } catch (error) {
-      res.status(503).json({ ok: false, error: error.message });
+      res.json({
+        ok: true,
+        app: "godot-video-background-remover",
+        tools: {
+          available: false,
+          error: error.message
+        }
+      });
     }
   });
 

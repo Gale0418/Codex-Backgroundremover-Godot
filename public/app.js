@@ -24,7 +24,11 @@ async function checkHealth() {
   try {
     const response = await fetch("/api/health");
     const result = await response.json();
-    healthStatus.textContent = result.ok ? "本機服務正常" : "服務異常";
+    if (!result.ok) {
+      healthStatus.textContent = "服務異常";
+      return;
+    }
+    healthStatus.textContent = result.tools?.available ? "本機服務正常" : "服務正常，ffmpeg 受限";
   } catch {
     healthStatus.textContent = "連線失敗";
   }

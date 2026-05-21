@@ -16,4 +16,25 @@ describe("API smoke", () => {
       await new Promise((resolve) => server.close(resolve));
     }
   });
+
+  it("keeps health endpoint alive when ffmpeg capability check fails", async () => {
+    const app = await createApp({
+      assertTools: async () => {
+        throw new Error("spawn EPERM");
+      }
+    });
+    const server = app.listen(0);
+    const { port } = server.address();
+
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/api/health`);
+      const body = await response.json();
+      expect(response.status).toBe(200);
+      expect(body.ok).toBe(true);
+      expect(body.tools.available).toBe(false);
+      expect(body.tools.error).toBe("spawn EPERM");
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
+  });
 });
