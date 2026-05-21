@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Godot 透明 Sprite Sheet 產生器</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Local Sprite Sheet Tool</p>
+            <h1>Godot 透明 Sprite Sheet 產生器</h1>
+          </div>
+          <span id="healthStatus" class="status-pill">檢查中</span>
+        </header>
+        <section class="panel">
+          <label class="dropzone" for="videoFile">
+            <input id="videoFile" type="file" accept="video/*" />
+            <span>選擇影片</span>
+            <small>支援短影片，第一版建議 3-8 秒。</small>
+          </label>
+          <div class="file-summary">
+            <strong id="fileName">尚未選擇影片</strong>
+            <span id="videoMeta">等待上傳</span>
+          </div>
+          <div class="controls-grid">
+            <label>
+              背景色
+              <input id="backgroundColor" type="color" value="#ffffff" />
+            </label>
+            <label>
+              模式
+              <select id="mode">
+                <option value="keying">快速 keying</option>
+                <option value="ai">髮絲 AI Experimental</option>
+              </select>
+            </label>
+            <label>
+              Tolerance
+              <input id="tolerance" type="range" min="0" max="160" value="42" />
+            </label>
+            <label>
+              Feather
+              <input id="feather" type="range" min="0" max="80" value="8" />
+            </label>
+            <label>
+              Despill
+              <input id="despill" type="range" min="0" max="100" value="25" />
+            </label>
+            <label>
+              FPS
+              <input id="fps" type="number" min="1" max="30" value="12" />
+            </label>
+            <label>
+              縮放
+              <input id="scale" type="number" min="0.1" max="1" step="0.1" value="1" />
+            </label>
+            <label>
+              Sheet 最大寬
+              <input id="maxSheetWidth" type="number" min="512" max="8192" step="512" value="4096" />
+            </label>
+          </div>
+          <button id="exportButton" class="primary-action" type="button" disabled>匯出 Sprite Sheet</button>
+          <a id="downloadLink" class="download-link" hidden>下載結果</a>
+          <pre id="logOutput" class="log-output">準備好了。</pre>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

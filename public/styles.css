@@ -1,0 +1,172 @@
+:root {
+  color-scheme: dark;
+  font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+  background: #151718;
+  color: #f4f1e8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #151718;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.workspace {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: #9fd8cb;
+  font-size: 0.82rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: 0;
+}
+
+.status-pill {
+  padding: 8px 12px;
+  border: 1px solid #405052;
+  border-radius: 999px;
+  color: #dce8df;
+  white-space: nowrap;
+}
+
+.panel {
+  border: 1px solid #30383a;
+  border-radius: 8px;
+  padding: 18px;
+  background: #1f2324;
+}
+
+.dropzone {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  min-height: 180px;
+  place-items: center;
+  border: 1px dashed #607173;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.dropzone input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+}
+
+.dropzone span {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.dropzone small {
+  color: #b9c7c0;
+}
+
+.file-summary,
+.controls-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.file-summary span {
+  color: #b9c7c0;
+}
+
+.controls-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.controls-grid label {
+  display: grid;
+  gap: 8px;
+  color: #d9e3dc;
+}
+
+input[type="color"],
+select {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #405052;
+  border-radius: 6px;
+  background: #171a1b;
+  color: #f4f1e8;
+}
+
+input[type="range"],
+input[type="number"] {
+  width: 100%;
+}
+
+input[type="number"] {
+  min-height: 40px;
+  border: 1px solid #405052;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #171a1b;
+  color: #f4f1e8;
+}
+
+.log-output {
+  margin-top: 16px;
+  min-height: 72px;
+  padding: 12px;
+  border: 1px solid #30383a;
+  border-radius: 8px;
+  overflow: auto;
+  background: #121515;
+  color: #c8d7cf;
+  white-space: pre-wrap;
+}
+
+.primary-action,
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 16px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 6px;
+  background: #9fd8cb;
+  color: #10201c;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.download-link {
+  margin-left: 10px;
+  background: #e7c46b;
+}

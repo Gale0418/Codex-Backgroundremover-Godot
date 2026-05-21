@@ -1,0 +1,24 @@
+{
+  "name": "godot-video-background-remover",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local video background remover that exports Godot-friendly transparent sprite sheets.",
+  "scripts": {
+    "dev": "node server/index.js",
+    "start": "node server/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "smoke": "node server/index.js --smoke"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "express": "^4.19.2",
+    "multer": "^2.0.2",
+    "sharp": "^0.33.5",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.1"
+  }
+}
