@@ -17,3 +17,9 @@
 - 決策：影片載入後抽樣影格邊緣像素，推測背景色並顯示色塊。
 - 原因：大多數網頁生成影片背景在邊緣穩定，自動偵測可以減少操作步驟。
 - 影響：角色或建築貼邊時可能偵測錯，所以 UI 必須保留白、黑、綠與自訂顏色覆蓋。
+
+## 2026-05-22：Sprite Sheet 加入格間距與邊緣延展
+
+- 決策：匯出時預設 `padding: 2`、`extrude: 1`，並寫入 `metadata.json`。
+- 原因：Godot 或其他遊戲引擎在縮放、filter、mipmap 或 subpixel 移動時，無間格 atlas 容易取樣到相鄰格。
+- 影響：sheet 尺寸會略微變大；Godot 切格時需參考 metadata 的 `cellWidth`、`cellHeight`、`padding`、`extrude`。

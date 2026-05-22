@@ -12,11 +12,30 @@ describe("sprite sheet", () => {
       frameHeight: 64,
       frameCount: 10,
       maxSheetWidth: 256,
-      maxSheetHeight: 256
+      maxSheetHeight: 256,
+      padding: 0,
+      extrude: 0
     });
     expect(layout.columns).toBe(4);
     expect(layout.rowsPerSheet).toBe(4);
     expect(layout.framesPerSheet).toBe(16);
+  });
+
+  it("accounts for padding and extruded cells in layout", () => {
+    const layout = planSheetLayout({
+      frameWidth: 64,
+      frameHeight: 64,
+      frameCount: 10,
+      maxSheetWidth: 256,
+      maxSheetHeight: 256,
+      padding: 2,
+      extrude: 1
+    });
+    expect(layout.cellWidth).toBe(66);
+    expect(layout.cellHeight).toBe(66);
+    expect(layout.columns).toBe(3);
+    expect(layout.rowsPerSheet).toBe(3);
+    expect(layout.framesPerSheet).toBe(9);
   });
 
   it("creates a sheet and metadata", async () => {
@@ -41,12 +60,22 @@ describe("sprite sheet", () => {
       framePaths,
       outputDir: dir,
       fps: 12,
-      maxSheetWidth: 32,
-      maxSheetHeight: 32
+      maxSheetWidth: 34,
+      maxSheetHeight: 32,
+      padding: 2,
+      extrude: 1
     });
 
     expect(result.metadata.frameCount).toBe(3);
     expect(result.metadata.sheets[0].columns).toBe(3);
+    expect(result.metadata.frameWidth).toBe(8);
+    expect(result.metadata.frameHeight).toBe(8);
+    expect(result.metadata.cellWidth).toBe(10);
+    expect(result.metadata.cellHeight).toBe(10);
+    expect(result.metadata.padding).toBe(2);
+    expect(result.metadata.extrude).toBe(1);
+    expect(result.metadata.sheets[0].width).toBe(34);
+    expect(result.metadata.sheets[0].height).toBe(10);
     await expect(fs.stat(path.join(dir, "metadata.json"))).resolves.toBeTruthy();
   });
 });

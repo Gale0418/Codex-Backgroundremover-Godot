@@ -10,6 +10,8 @@ const despill = document.querySelector("#despill");
 const fps = document.querySelector("#fps");
 const scale = document.querySelector("#scale");
 const maxSheetWidth = document.querySelector("#maxSheetWidth");
+const padding = document.querySelector("#padding");
+const extrude = document.querySelector("#extrude");
 const exportButton = document.querySelector("#exportButton");
 const downloadLink = document.querySelector("#downloadLink");
 const logOutput = document.querySelector("#logOutput");
@@ -59,7 +61,9 @@ function exportSettings() {
     fps: Number(fps.value),
     scale: Number(scale.value),
     maxSheetWidth: Number(maxSheetWidth.value),
-    maxSheetHeight: 4096
+    maxSheetHeight: 4096,
+    padding: Number(padding.value),
+    extrude: Number(extrude.value)
   };
 }
 

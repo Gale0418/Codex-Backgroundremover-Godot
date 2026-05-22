@@ -121,7 +121,9 @@ export async function createApp({ assertTools = assertFfmpegAvailable } = {}) {
       fps: Number(req.body.fps || config.defaults.fps),
       scale: Number(req.body.scale || config.defaults.scale),
       maxSheetWidth: Number(req.body.maxSheetWidth || config.defaults.maxSheetWidth),
-      maxSheetHeight: Number(req.body.maxSheetHeight || config.defaults.maxSheetHeight)
+      maxSheetHeight: Number(req.body.maxSheetHeight || config.defaults.maxSheetHeight),
+      padding: Number(req.body.padding ?? config.defaults.padding),
+      extrude: Number(req.body.extrude ?? config.defaults.extrude)
     };
 
     if (settings.mode === "ai") {
@@ -165,7 +167,9 @@ export async function createApp({ assertTools = assertFfmpegAvailable } = {}) {
           outputDir: job.outputDir,
           fps: settings.fps,
           maxSheetWidth: settings.maxSheetWidth,
-          maxSheetHeight: settings.maxSheetHeight
+          maxSheetHeight: settings.maxSheetHeight,
+          padding: settings.padding,
+          extrude: settings.extrude
         });
         const zipPath = path.join(config.exportDir, `${job.id}.zip`);
         await zipDirectory(job.outputDir, zipPath);

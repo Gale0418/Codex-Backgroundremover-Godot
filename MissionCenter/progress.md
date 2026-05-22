@@ -1,13 +1,13 @@
 # 進度
 
 - 專案：Godot 透明 Sprite Sheet 影片去背工具
-- 目前目標：開始本機 Web + Node + ffmpeg 的第一個可跑版本。
+- 目前目標：改善 Sprite Sheet 匯出格式，讓 Godot 使用時不會上下格黏在一起。
 - 目前狀態：Execute
 - 里程碑：完成本機 Web MVP，可匯入影片、偵測背景色、產出透明 Sprite Sheet PNG + metadata JSON。
-- 進度條：[###-------] 30%
-- 進行中任務：BR-T4 本機 Web 專案骨架
+- 進度條：[######----] 60%
+- 進行中任務：BR-T7 Sprite Sheet 與 metadata 產生
 - 阻塞原因：無
-- 下次更新：建立 package、Express 服務、前端入口與第一個 API smoke test。
+- 下次更新：用實際影片重新匯出，確認透明格間距與 metadata 切格資訊符合 Godot 使用需求。
 
 ## 目前結論
 

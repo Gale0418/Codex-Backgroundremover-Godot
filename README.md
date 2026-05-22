@@ -17,6 +17,7 @@ npm run dev
 - 快速純色 keying。
 - 輸出透明 Sprite Sheet PNG。
 - 輸出 metadata JSON。
+- 可設定格間距與邊緣延展，降低 Godot 取樣到隔壁格的風險。
 
 ## 髮絲 AI 模式
 
@@ -25,3 +26,5 @@ npm run dev
 ## Godot 使用方式
 
 將輸出的 `sprite-sheet-001.png` 匯入 Godot。依 `metadata.json` 的 `frameWidth`、`frameHeight`、`fps`、`columns` 建立動畫格。
+
+如果使用 `padding` 或 `extrude`，請依 `metadata.json` 的 `cellWidth`、`cellHeight`、`padding`、`extrude` 計算每格區域。預設建議是 `padding: 2`、`extrude: 1`。

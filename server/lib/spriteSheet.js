@@ -2,10 +2,33 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
-export function planSheetLayout({ frameWidth, frameHeight, frameCount, maxSheetWidth, maxSheetHeight }) {
-  const columns = Math.max(1, Math.min(frameCount, Math.floor(maxSheetWidth / frameWidth)));
-  const rowsPerSheet = Math.max(1, Math.floor(maxSheetHeight / frameHeight));
+function clampNonNegativeInteger(value, fallback = 0) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.max(0, Math.round(number));
+}
+
+export function planSheetLayout({
+  frameWidth,
+  frameHeight,
+  frameCount,
+  maxSheetWidth,
+  maxSheetHeight,
+  padding = 0,
+  extrude = 0
+}) {
+  const safePadding = clampNonNegativeInteger(padding);
+  const safeExtrude = clampNonNegativeInteger(extrude);
+  const cellWidth = frameWidth + safeExtrude * 2;
+  const cellHeight = frameHeight + safeExtrude * 2;
+  const columns = Math.max(
+    1,
+    Math.min(frameCount, Math.floor((maxSheetWidth + safePadding) / (cellWidth + safePadding)))
+  );
+  const rowsPerSheet = Math.max(1, Math.floor((maxSheetHeight + safePadding) / (cellHeight + safePadding)));
   return {
+    cellWidth,
+    cellHeight,
     columns,
     rowsPerSheet,
     framesPerSheet: columns * rowsPerSheet
@@ -20,19 +43,31 @@ async function readFrameSize(framePath) {
   };
 }
 
-export async function createSpriteSheets({ framePaths, outputDir, fps, maxSheetWidth, maxSheetHeight }) {
+export async function createSpriteSheets({
+  framePaths,
+  outputDir,
+  fps,
+  maxSheetWidth,
+  maxSheetHeight,
+  padding: requestedPadding = 0,
+  extrude: requestedExtrude = 0
+}) {
   if (framePaths.length === 0) {
     throw new Error("No frames available for sprite sheet export.");
   }
 
   await fs.mkdir(outputDir, { recursive: true });
   const frameSize = await readFrameSize(framePaths[0]);
+  const padding = clampNonNegativeInteger(requestedPadding);
+  const extrude = clampNonNegativeInteger(requestedExtrude);
   const layout = planSheetLayout({
     frameWidth: frameSize.width,
     frameHeight: frameSize.height,
     frameCount: framePaths.length,
     maxSheetWidth,
-    maxSheetHeight
+    maxSheetHeight,
+    padding,
+    extrude
   });
 
   const sheets = [];
@@ -40,16 +75,36 @@ export async function createSpriteSheets({ framePaths, outputDir, fps, maxSheetW
     const sheetIndex = sheets.length;
     const slice = framePaths.slice(start, start + layout.framesPerSheet);
     const rows = Math.ceil(slice.length / layout.columns);
-    const width = layout.columns * frameSize.width;
-    const height = rows * frameSize.height;
+    const width = layout.columns * layout.cellWidth + Math.max(0, layout.columns - 1) * padding;
+    const height = rows * layout.cellHeight + Math.max(0, rows - 1) * padding;
     const fileName = `sprite-sheet-${String(sheetIndex + 1).padStart(3, "0")}.png`;
     const sheetPath = path.join(outputDir, fileName);
 
-    const composites = slice.map((framePath, localIndex) => ({
-      input: framePath,
-      left: (localIndex % layout.columns) * frameSize.width,
-      top: Math.floor(localIndex / layout.columns) * frameSize.height
-    }));
+    const composites = await Promise.all(
+      slice.map(async (framePath, localIndex) => {
+        const col = localIndex % layout.columns;
+        const row = Math.floor(localIndex / layout.columns);
+        const input =
+          extrude > 0
+            ? await sharp(framePath)
+                .ensureAlpha()
+                .extend({
+                  top: extrude,
+                  bottom: extrude,
+                  left: extrude,
+                  right: extrude,
+                  extendWith: "copy"
+                })
+                .png()
+                .toBuffer()
+            : framePath;
+        return {
+          input,
+          left: col * (layout.cellWidth + padding),
+          top: row * (layout.cellHeight + padding)
+        };
+      })
+    );
 
     await sharp({
       create: {
@@ -75,10 +130,14 @@ export async function createSpriteSheets({ framePaths, outputDir, fps, maxSheetW
   }
 
   const metadata = {
-    fps,
+      fps,
     frameCount: framePaths.length,
     frameWidth: frameSize.width,
     frameHeight: frameSize.height,
+    cellWidth: layout.cellWidth,
+    cellHeight: layout.cellHeight,
+    padding,
+    extrude,
     sheets
   };
   await fs.writeFile(path.join(outputDir, "metadata.json"), JSON.stringify(metadata, null, 2));

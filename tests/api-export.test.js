@@ -65,7 +65,9 @@ describe("export API", () => {
           fps: 4,
           scale: 1,
           maxSheetWidth: 512,
-          maxSheetHeight: 512
+          maxSheetHeight: 512,
+          padding: 2,
+          extrude: 1
         })
       });
       expect(exportResponse.status).toBe(200);
@@ -74,6 +76,9 @@ describe("export API", () => {
       expect(done.status).toBe("done");
       expect(done.result.metadata.frameCount).toBeGreaterThan(0);
       expect(done.result.metadata.sheets[0].file).toBe("sprite-sheet-001.png");
+      expect(done.result.metadata.padding).toBe(2);
+      expect(done.result.metadata.extrude).toBe(1);
+      expect(done.result.metadata.cellWidth).toBe(done.result.metadata.frameWidth + 2);
       expect(done.result.downloadUrl).toContain(".zip");
     } finally {
       await new Promise((resolve) => server.close(resolve));

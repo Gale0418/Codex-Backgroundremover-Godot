@@ -18,6 +18,8 @@ export const config = {
     scale: 1,
     maxSheetWidth: 4096,
     maxSheetHeight: 4096,
+    padding: 2,
+    extrude: 1,
     debugFrames: false
   }
 };
