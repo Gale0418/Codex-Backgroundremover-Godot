@@ -81,6 +81,22 @@
                 <p id="resultSummary" class="result-summary"></p>
               </div>
             </div>
+            <div class="animation-preview">
+              <div id="animationStage" class="animation-stage" data-background="scene">
+                <canvas id="animationCanvas" class="animation-canvas" width="1" height="1"></canvas>
+              </div>
+              <div class="preview-controls">
+                <label>
+                  預覽背景
+                  <select id="previewBackground">
+                    <option value="scene">測試背景</option>
+                    <option value="checker">透明棋盤</option>
+                    <option value="dark">深色背景</option>
+                  </select>
+                </label>
+                <span id="animationStatus" class="result-summary">等待匯出</span>
+              </div>
+            </div>
             <div id="sheetPreviewList" class="sheet-preview-list"></div>
             <div class="result-heading coordinate-heading">
               <div>

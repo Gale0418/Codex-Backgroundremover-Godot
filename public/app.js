@@ -1,4 +1,9 @@
-import { buildFrameRows, resolveSheetUrls, summarizeMetadata } from "./resultPresenter.js";
+import {
+  buildAnimationPreviewModel,
+  buildFrameRows,
+  resolveSheetUrls,
+  summarizeMetadata
+} from "./resultPresenter.js";
 
 const healthStatus = document.querySelector("#healthStatus");
 const videoFile = document.querySelector("#videoFile");
@@ -19,22 +24,103 @@ const downloadLink = document.querySelector("#downloadLink");
 const logOutput = document.querySelector("#logOutput");
 const resultPanel = document.querySelector("#resultPanel");
 const resultSummary = document.querySelector("#resultSummary");
+const animationStage = document.querySelector("#animationStage");
+const animationCanvas = document.querySelector("#animationCanvas");
+const previewBackground = document.querySelector("#previewBackground");
+const animationStatus = document.querySelector("#animationStatus");
 const sheetPreviewList = document.querySelector("#sheetPreviewList");
 const coordinateCount = document.querySelector("#coordinateCount");
 const frameTableBody = document.querySelector("#frameTableBody");
 
 let currentJobId = null;
+let animationFrameId = null;
+let previewRenderToken = 0;
 
 function log(message) {
   logOutput.textContent = message;
 }
 
+function stopAnimationPreview() {
+  previewRenderToken += 1;
+  if (animationFrameId !== null) {
+    window.cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+}
+
 function resetResult() {
+  stopAnimationPreview();
   resultPanel.hidden = true;
   resultSummary.textContent = "";
+  animationStatus.textContent = "等待匯出";
   coordinateCount.textContent = "";
   sheetPreviewList.replaceChildren();
   frameTableBody.replaceChildren();
+  const context = animationCanvas.getContext("2d");
+  context.clearRect(0, 0, animationCanvas.width, animationCanvas.height);
+}
+
+async function loadPreviewImages(model) {
+  const urls = [...new Set(model.frames.map((frame) => frame.imageUrl))];
+  const entries = await Promise.all(
+    urls.map(
+      (url) =>
+        new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve([url, image]);
+          image.onerror = () => reject(new Error(`Preview image failed to load: ${url}`));
+          image.src = url;
+        })
+    )
+  );
+  return new Map(entries);
+}
+
+async function renderAnimationPreview(result) {
+  stopAnimationPreview();
+  const token = previewRenderToken;
+  const model = buildAnimationPreviewModel(result, currentJobId);
+  const context = animationCanvas.getContext("2d");
+  animationCanvas.width = model.width;
+  animationCanvas.height = model.height;
+  context.clearRect(0, 0, model.width, model.height);
+
+  if (model.frames.length === 0) {
+    animationStatus.textContent = "無可播放影格";
+    return;
+  }
+
+  animationStatus.textContent = "載入預覽中";
+  try {
+    const images = await loadPreviewImages(model);
+    if (token !== previewRenderToken) return;
+    const startedAt = window.performance.now();
+
+    const draw = (now) => {
+      const elapsed = now - startedAt;
+      const frameIndex = Math.floor(elapsed / model.frameDurationMs) % model.frames.length;
+      const frame = model.frames[frameIndex];
+      const image = images.get(frame.imageUrl);
+      context.clearRect(0, 0, model.width, model.height);
+      context.drawImage(
+        image,
+        frame.sourceRect.x,
+        frame.sourceRect.y,
+        frame.sourceRect.width,
+        frame.sourceRect.height,
+        0,
+        0,
+        model.width,
+        model.height
+      );
+      animationStatus.textContent = `Frame ${frame.index + 1} / ${model.frames.length}`;
+      animationFrameId = window.requestAnimationFrame(draw);
+    };
+
+    draw(startedAt);
+  } catch (error) {
+    animationStatus.textContent = error.message;
+  }
 }
 
 function renderResult(result) {
@@ -80,6 +166,7 @@ function renderResult(result) {
   });
   frameTableBody.replaceChildren(rowFragment);
   resultPanel.hidden = false;
+  renderAnimationPreview(result);
 }
 
 async function checkHealth() {
@@ -205,4 +292,8 @@ mode.addEventListener("change", async () => {
   if (!status.available) {
     log(status.message);
   }
+});
+
+previewBackground.addEventListener("change", () => {
+  animationStage.dataset.background = previewBackground.value;
 });

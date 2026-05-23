@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="Preview scene background">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5aa9e6"/>
+      <stop offset="0.52" stop-color="#8fd6c2"/>
+      <stop offset="1" stop-color="#f3d16b"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3c7d68"/>
+      <stop offset="1" stop-color="#273f42"/>
+    </linearGradient>
+    <pattern id="tile" width="80" height="80" patternUnits="userSpaceOnUse">
+      <path d="M0 40 40 20 80 40 40 60Z" fill="#4e9b79"/>
+      <path d="M0 40 40 60v20L0 60Z" fill="#34715d"/>
+      <path d="M80 40 40 60v20l40-20Z" fill="#285b56"/>
+    </pattern>
+  </defs>
+  <rect width="960" height="540" fill="url(#sky)"/>
+  <circle cx="790" cy="92" r="58" fill="#ffe79a" opacity="0.9"/>
+  <path d="M0 320c120-56 230-54 335 0s203 55 306 0 208-63 319-10v230H0Z" fill="#306f70" opacity="0.8"/>
+  <rect y="340" width="960" height="200" fill="url(#ground)"/>
+  <rect y="380" width="960" height="160" fill="url(#tile)" opacity="0.75"/>
+  <g opacity="0.9">
+    <rect x="90" y="232" width="88" height="108" rx="6" fill="#f4f1e8"/>
+    <rect x="106" y="252" width="20" height="24" fill="#5aa9e6"/>
+    <rect x="142" y="252" width="20" height="24" fill="#5aa9e6"/>
+    <rect x="122" y="298" width="26" height="42" fill="#e7c46b"/>
+    <path d="M78 232h112l-56-44Z" fill="#d66c63"/>
+    <rect x="704" y="266" width="118" height="74" rx="6" fill="#dce8df"/>
+    <rect x="726" y="286" width="24" height="20" fill="#5aa9e6"/>
+    <rect x="776" y="286" width="24" height="20" fill="#5aa9e6"/>
+    <path d="M690 266h146l-74-48Z" fill="#6c74d6"/>
+  </g>
+  <path d="M0 428h960" stroke="#f4f1e8" stroke-width="3" opacity="0.28"/>
+  <path d="M0 500h960" stroke="#101313" stroke-width="3" opacity="0.2"/>
+</svg>

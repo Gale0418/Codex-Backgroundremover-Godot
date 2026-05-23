@@ -11,5 +11,5 @@
 | BR-T6 | 快速純色 keying 匯出 | Task | BR-E1 | P1 | Done | Codex | BR-T5 | 維持 ffmpeg 匯出穩定 | 產出透明 PNG frames，alpha 檢查通過 | 4 | ffmpeg, alpha | 保底模式 |
 | BR-T7 | Sprite Sheet 與 metadata 產生 | Task | BR-E1 | P1 | Done | Codex | BR-T6 | 維持匯出格式穩定 | PNG sheet 尺寸、格數、FPS、padding/extrude 與 frames[].frameRect 一致 | 4 | godot, export | 支援多張 sheet、格間距、邊緣延展、每幀座標 |
 | BR-T8 | 實驗髮絲級 AI matting 模式 | Task | BR-E1 | P2 | Backlog | Codex | BR-T7 | 規劃 Python worker 與模型依賴 | 能處理短片抽樣幀並輸出更細 alpha | 4 | ai, experimental | 可先用 rembg/transparent-background 類工具 |
-| BR-T9 | MVP smoke test 與 Godot 使用說明 | Task | BR-E1 | P1 | In Progress | Codex | BR-T7 | 補 Godot 匯入細節與下一階段限制 | smoke-tests.md 有可重複命令與觀察結果 | 2 | verification, docs | AI 模式若未裝依賴，不阻塞 MVP |
+| BR-T9 | MVP smoke test 與 Godot 使用說明 | Task | BR-E1 | P1 | In Progress | Codex | BR-T7 | 推送公開 GitHub repo | smoke-tests.md 有可重複命令與觀察結果 | 2 | verification, docs | 已補動畫預覽 smoke；AI 模式若未裝依賴，不阻塞 MVP |
 | BR-T10 | 收尾與下一階段選項 | Task | BR-E1 | P2 | Backlog | Codex | BR-T9 | 整理成果、限制與後續 | progress.md 與 snapshot.md 更新完成 | 1 | closeout |  |
