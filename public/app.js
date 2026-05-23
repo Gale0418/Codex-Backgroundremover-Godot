@@ -1,3 +1,5 @@
+import { buildFrameRows, resolveSheetUrls, summarizeMetadata } from "./resultPresenter.js";
+
 const healthStatus = document.querySelector("#healthStatus");
 const videoFile = document.querySelector("#videoFile");
 const fileName = document.querySelector("#fileName");
@@ -15,11 +17,69 @@ const extrude = document.querySelector("#extrude");
 const exportButton = document.querySelector("#exportButton");
 const downloadLink = document.querySelector("#downloadLink");
 const logOutput = document.querySelector("#logOutput");
+const resultPanel = document.querySelector("#resultPanel");
+const resultSummary = document.querySelector("#resultSummary");
+const sheetPreviewList = document.querySelector("#sheetPreviewList");
+const coordinateCount = document.querySelector("#coordinateCount");
+const frameTableBody = document.querySelector("#frameTableBody");
 
 let currentJobId = null;
 
 function log(message) {
   logOutput.textContent = message;
+}
+
+function resetResult() {
+  resultPanel.hidden = true;
+  resultSummary.textContent = "";
+  coordinateCount.textContent = "";
+  sheetPreviewList.replaceChildren();
+  frameTableBody.replaceChildren();
+}
+
+function renderResult(result) {
+  const metadata = result.metadata;
+  const sheetUrls = resolveSheetUrls(result, currentJobId);
+  const frameRows = buildFrameRows(metadata);
+
+  resultSummary.textContent = summarizeMetadata(metadata);
+  coordinateCount.textContent = `${frameRows.length} frames`;
+  sheetPreviewList.replaceChildren();
+
+  const previewFragment = document.createDocumentFragment();
+  sheetUrls.forEach((sheet) => {
+    const preview = document.createElement("figure");
+    preview.className = "sheet-preview";
+
+    const imageWrap = document.createElement("div");
+    imageWrap.className = "sheet-preview-frame";
+
+    const image = document.createElement("img");
+    image.src = sheet.url;
+    image.alt = sheet.file;
+    image.loading = "lazy";
+
+    const caption = document.createElement("figcaption");
+    caption.textContent = sheet.file;
+
+    imageWrap.append(image);
+    preview.append(imageWrap, caption);
+    previewFragment.append(preview);
+  });
+  sheetPreviewList.append(previewFragment);
+
+  const rowFragment = document.createDocumentFragment();
+  frameRows.forEach((frame) => {
+    const row = document.createElement("tr");
+    [frame.index, frame.sheet, frame.frameRect, frame.cellRect].forEach((value) => {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.append(cell);
+    });
+    rowFragment.append(row);
+  });
+  frameTableBody.replaceChildren(rowFragment);
+  resultPanel.hidden = false;
 }
 
 async function checkHealth() {
@@ -77,6 +137,7 @@ async function pollJob() {
     downloadLink.href = job.result.downloadUrl;
     downloadLink.download = "godot-sprite-sheet-export.zip";
     downloadLink.textContent = "下載結果";
+    renderResult(job.result);
     exportButton.disabled = false;
     return;
   }
@@ -91,6 +152,7 @@ async function pollJob() {
 async function uploadVideo(file) {
   const formData = new FormData();
   formData.append("video", file);
+  resetResult();
   log("上傳並讀取影片中...");
   const response = await fetch("/api/upload", {
     method: "POST",
@@ -121,6 +183,7 @@ exportButton.addEventListener("click", async () => {
   if (!currentJobId) return;
   exportButton.disabled = true;
   downloadLink.hidden = true;
+  resetResult();
   const response = await fetch(`/api/jobs/${currentJobId}/export`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

@@ -178,6 +178,10 @@ export async function createApp({ assertTools = assertFfmpegAvailable } = {}) {
           progress: 100,
           result: {
             metadata,
+            sheetUrls: metadata.sheets.map((sheet) => ({
+              file: sheet.file,
+              url: `/exports/${job.id}/${sheet.file}`
+            })),
             downloadUrl: `/exports/${job.id}.zip`
           }
         });

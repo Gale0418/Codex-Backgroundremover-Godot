@@ -71,6 +71,7 @@ export async function createSpriteSheets({
   });
 
   const sheets = [];
+  const frames = [];
   for (let start = 0; start < framePaths.length; start += layout.framesPerSheet) {
     const sheetIndex = sheets.length;
     const slice = framePaths.slice(start, start + layout.framesPerSheet);
@@ -80,10 +81,12 @@ export async function createSpriteSheets({
     const fileName = `sprite-sheet-${String(sheetIndex + 1).padStart(3, "0")}.png`;
     const sheetPath = path.join(outputDir, fileName);
 
-    const composites = await Promise.all(
+    const plannedFrames = await Promise.all(
       slice.map(async (framePath, localIndex) => {
         const col = localIndex % layout.columns;
         const row = Math.floor(localIndex / layout.columns);
+        const left = col * (layout.cellWidth + padding);
+        const top = row * (layout.cellHeight + padding);
         const input =
           extrude > 0
             ? await sharp(framePath)
@@ -99,12 +102,32 @@ export async function createSpriteSheets({
                 .toBuffer()
             : framePath;
         return {
-          input,
-          left: col * (layout.cellWidth + padding),
-          top: row * (layout.cellHeight + padding)
+          composite: {
+            input,
+            left,
+            top
+          },
+          frame: {
+            index: start + localIndex,
+            sheet: fileName,
+            cellRect: {
+              x: left,
+              y: top,
+              width: layout.cellWidth,
+              height: layout.cellHeight
+            },
+            frameRect: {
+              x: left + extrude,
+              y: top + extrude,
+              width: frameSize.width,
+              height: frameSize.height
+            }
+          }
         };
       })
     );
+    const composites = plannedFrames.map((plannedFrame) => plannedFrame.composite);
+    frames.push(...plannedFrames.map((plannedFrame) => plannedFrame.frame));
 
     await sharp({
       create: {
@@ -130,7 +153,7 @@ export async function createSpriteSheets({
   }
 
   const metadata = {
-      fps,
+    fps,
     frameCount: framePaths.length,
     frameWidth: frameSize.width,
     frameHeight: frameSize.height,
@@ -138,7 +161,8 @@ export async function createSpriteSheets({
     cellHeight: layout.cellHeight,
     padding,
     extrude,
-    sheets
+    sheets,
+    frames
   };
   await fs.writeFile(path.join(outputDir, "metadata.json"), JSON.stringify(metadata, null, 2));
   return { metadata, sheets };

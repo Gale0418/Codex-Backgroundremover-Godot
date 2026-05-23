@@ -170,3 +170,122 @@ input[type="number"] {
   margin-left: 10px;
   background: #e7c46b;
 }
+
+.result-panel {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #30383a;
+}
+
+.result-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.coordinate-heading {
+  margin-top: 20px;
+}
+
+.result-heading h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  letter-spacing: 0;
+}
+
+.result-summary {
+  margin: 4px 0 0;
+  color: #b9c7c0;
+}
+
+.sheet-preview-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.sheet-preview {
+  margin: 0;
+}
+
+.sheet-preview-frame {
+  max-height: 520px;
+  overflow: auto;
+  border: 1px solid #405052;
+  border-radius: 6px;
+  background-color: #202525;
+  background-image:
+    linear-gradient(45deg, #2e3636 25%, transparent 25%),
+    linear-gradient(-45deg, #2e3636 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #2e3636 75%),
+    linear-gradient(-45deg, transparent 75%, #2e3636 75%);
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0;
+  background-size: 20px 20px;
+}
+
+.sheet-preview-frame img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.sheet-preview figcaption {
+  margin-top: 8px;
+  color: #f4f1e8;
+  font-weight: 700;
+}
+
+.coordinate-table-wrap {
+  max-height: 360px;
+  margin-top: 12px;
+  overflow: auto;
+  border: 1px solid #30383a;
+  border-radius: 6px;
+}
+
+.coordinate-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.coordinate-table th,
+.coordinate-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #30383a;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.coordinate-table th {
+  position: sticky;
+  top: 0;
+  background: #171a1b;
+  color: #dce8df;
+  z-index: 1;
+}
+
+.coordinate-table td {
+  color: #c8d7cf;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 14px;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .download-link {
+    margin-left: 0;
+  }
+}

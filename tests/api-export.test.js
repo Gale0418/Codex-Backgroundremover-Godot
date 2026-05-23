@@ -79,6 +79,23 @@ describe("export API", () => {
       expect(done.result.metadata.padding).toBe(2);
       expect(done.result.metadata.extrude).toBe(1);
       expect(done.result.metadata.cellWidth).toBe(done.result.metadata.frameWidth + 2);
+      expect(done.result.metadata.frames[0].sheet).toBe("sprite-sheet-001.png");
+      expect(done.result.metadata.frames[0].cellRect).toEqual({
+        x: 0,
+        y: 0,
+        width: done.result.metadata.cellWidth,
+        height: done.result.metadata.cellHeight
+      });
+      expect(done.result.metadata.frames[0].frameRect).toEqual({
+        x: 1,
+        y: 1,
+        width: done.result.metadata.frameWidth,
+        height: done.result.metadata.frameHeight
+      });
+      expect(done.result.sheetUrls[0]).toEqual({
+        file: "sprite-sheet-001.png",
+        url: `/exports/${uploaded.job.id}/sprite-sheet-001.png`
+      });
       expect(done.result.downloadUrl).toContain(".zip");
     } finally {
       await new Promise((resolve) => server.close(resolve));

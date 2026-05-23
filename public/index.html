@@ -74,6 +74,34 @@
           <button id="exportButton" class="primary-action" type="button" disabled>匯出 Sprite Sheet</button>
           <a id="downloadLink" class="download-link" hidden>下載結果</a>
           <pre id="logOutput" class="log-output">準備好了。</pre>
+          <section id="resultPanel" class="result-panel" hidden>
+            <div class="result-heading">
+              <div>
+                <h2>匯出成果</h2>
+                <p id="resultSummary" class="result-summary"></p>
+              </div>
+            </div>
+            <div id="sheetPreviewList" class="sheet-preview-list"></div>
+            <div class="result-heading coordinate-heading">
+              <div>
+                <h2>Godot 座標</h2>
+                <p id="coordinateCount" class="result-summary"></p>
+              </div>
+            </div>
+            <div class="coordinate-table-wrap">
+              <table class="coordinate-table">
+                <thead>
+                  <tr>
+                    <th>Frame</th>
+                    <th>Sheet</th>
+                    <th>frameRect</th>
+                    <th>cellRect</th>
+                  </tr>
+                </thead>
+                <tbody id="frameTableBody"></tbody>
+              </table>
+            </div>
+          </section>
         </section>
       </section>
     </main>

@@ -76,6 +76,13 @@ describe("sprite sheet", () => {
     expect(result.metadata.extrude).toBe(1);
     expect(result.metadata.sheets[0].width).toBe(34);
     expect(result.metadata.sheets[0].height).toBe(10);
+    expect(result.metadata.frames[0]).toEqual({
+      index: 0,
+      sheet: "sprite-sheet-001.png",
+      cellRect: { x: 0, y: 0, width: 10, height: 10 },
+      frameRect: { x: 1, y: 1, width: 8, height: 8 }
+    });
+    expect(result.metadata.frames[1].frameRect).toEqual({ x: 13, y: 1, width: 8, height: 8 });
     await expect(fs.stat(path.join(dir, "metadata.json"))).resolves.toBeTruthy();
   });
 });
