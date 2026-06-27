@@ -13,8 +13,30 @@ import { assertFfmpegAvailable, extractFrames, extractSampleFrame, probeVideo } 
 import { hexToRgb, keyFrameFile } from "./lib/keying.js";
 import { createUploadJob, getJob, publicJob, updateJob } from "./lib/jobs.js";
 import { createSpriteSheets } from "./lib/spriteSheet.js";
+import { isAcceptedVideoMimeType, sanitizeExportSettings } from "./lib/requestValidation.js";
 
-const upload = multer({ dest: config.uploadDir });
+const upload = multer({
+  dest: config.uploadDir,
+  limits: { fileSize: 200 * 1024 * 1024 },
+  fileFilter: (_req, file, callback) => {
+    if (!isAcceptedVideoMimeType(file?.mimetype)) {
+      callback(new Error("Only video files allowed."));
+      return;
+    }
+    callback(null, true);
+  }
+});
+
+function uploadSingleVideo(req, res, next) {
+  upload.single("video")(req, res, (error) => {
+    if (!error) {
+      next();
+      return;
+    }
+    const status = error.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+    res.status(status).json({ error: error.message || "Upload failed." });
+  });
+}
 
 export function isDirectRun(moduleUrl, argvPath) {
   if (!argvPath) return false;
@@ -65,7 +87,7 @@ export async function createApp({ assertTools = assertFfmpegAvailable } = {}) {
     }
   });
 
-  app.post("/api/upload", upload.single("video"), async (req, res) => {
+  app.post("/api/upload", uploadSingleVideo, async (req, res) => {
     try {
       if (!req.file) {
         res.status(400).json({ error: "No video file uploaded." });
@@ -115,15 +137,7 @@ export async function createApp({ assertTools = assertFfmpegAvailable } = {}) {
     const settings = {
       mode: req.body.mode || "keying",
       backgroundColor: hexToRgb(req.body.backgroundColor || "#ffffff"),
-      tolerance: Number(req.body.tolerance || config.defaults.tolerance),
-      feather: Number(req.body.feather || config.defaults.feather),
-      despill: Number(req.body.despill || config.defaults.despill),
-      fps: Number(req.body.fps || config.defaults.fps),
-      scale: Number(req.body.scale || config.defaults.scale),
-      maxSheetWidth: Number(req.body.maxSheetWidth || config.defaults.maxSheetWidth),
-      maxSheetHeight: Number(req.body.maxSheetHeight || config.defaults.maxSheetHeight),
-      padding: Number(req.body.padding ?? config.defaults.padding),
-      extrude: Number(req.body.extrude ?? config.defaults.extrude)
+      ...sanitizeExportSettings(req.body)
     };
 
     if (settings.mode === "ai") {
