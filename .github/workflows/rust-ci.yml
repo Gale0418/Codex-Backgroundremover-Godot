@@ -1,0 +1,121 @@
+name: Rust CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust:
+    name: fmt + clippy + test + build + smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Rust 1.98
+        run: |
+          rustup toolchain install 1.98.0 --profile minimal --component rustfmt --component clippy
+          rustup default 1.98.0
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --locked --all-targets --all-features -- -D warnings
+
+      - name: Test
+        run: cargo test --locked --all-targets
+
+      - name: Release build
+        run: cargo build --locked --release
+
+      - name: End-to-end smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          ffmpeg -hide_banner -loglevel error -y \
+            -f lavfi -i 'color=c=0x00ff00:s=64x64:d=0.6:r=12' \
+            -vf 'drawbox=x=20:y=12:w=24:h=40:color=red:t=fill' \
+            -pix_fmt yuv420p /tmp/bg-remover-smoke.mp4
+
+          BG_REMOVER_ROOT="$PWD" PORT=5177 ./target/release/codex-backgroundremover-godot >/tmp/bg-remover.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true; cat /tmp/bg-remover.log' EXIT
+
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:5177/api/health >/tmp/health.json; then
+              break
+            fi
+            sleep 0.2
+          done
+          python3 - <<'PY'
+          import json
+          data = json.load(open('/tmp/health.json'))
+          assert data['ok'] is True
+          assert data['tools']['available'] is True, data
+          PY
+
+          upload="$(curl -fsS -F 'video=@/tmp/bg-remover-smoke.mp4;type=video/mp4' http://127.0.0.1:5177/api/upload)"
+          job_id="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["job"]["id"])' <<<"$upload")"
+
+          curl -fsS -X POST "http://127.0.0.1:5177/api/jobs/$job_id/detect-background" >/tmp/detection.json
+          python3 - <<'PY'
+          import json
+          data = json.load(open('/tmp/detection.json'))
+          assert data['detection']['classification']['kind'] == 'green', data
+          PY
+
+          curl -fsS -X POST \
+            -H 'content-type: application/json' \
+            -d '{"mode":"keying","backgroundColor":"#00ff00","tolerance":60,"feather":8,"despill":25,"fps":12,"scale":1,"maxSheetWidth":512,"maxSheetHeight":512,"padding":2,"extrude":1}' \
+            "http://127.0.0.1:5177/api/jobs/$job_id/export" >/tmp/export-start.json
+
+          status=""
+          for _ in $(seq 1 80); do
+            result="$(curl -fsS "http://127.0.0.1:5177/api/jobs/$job_id")"
+            status="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["job"]["status"])' <<<"$result")"
+            if [ "$status" = done ]; then
+              printf '%s' "$result" >/tmp/job-result.json
+              break
+            fi
+            if [ "$status" = failed ]; then
+              printf '%s\n' "$result" >&2
+              exit 1
+            fi
+            sleep 0.25
+          done
+          test "$status" = done
+
+          test -f ".work/exports/$job_id/sprite-sheet-001.png"
+          test -f ".work/exports/$job_id/metadata.json"
+          test -f ".work/exports/$job_id.zip"
+          test ! -d ".work/exports/$job_id/frames"
+
+          JOB_ID="$job_id" python3 - <<'PY'
+          import json, os, zipfile
+          job = os.environ['JOB_ID']
+          metadata = json.load(open(f'.work/exports/{job}/metadata.json'))
+          assert metadata['frameCount'] > 0
+          assert metadata['frames'][0]['frameRect']['width'] == 64
+          assert metadata['frames'][0]['frameRect']['height'] == 64
+          with zipfile.ZipFile(f'.work/exports/{job}.zip') as archive:
+              names = archive.namelist()
+              assert 'metadata.json' in names
+              assert any(name.startswith('sprite-sheet-') and name.endswith('.png') for name in names)
+              assert not any(name.startswith('frames/') for name in names)
+          PY

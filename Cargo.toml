@@ -1,0 +1,30 @@
+[package]
+name = "codex-backgroundremover-godot"
+version = "0.2.0"
+edition = "2024"
+rust-version = "1.98"
+description = "Local Rust video background remover that exports Godot-friendly transparent sprite sheets."
+license = "Apache-2.0"
+
+[dependencies]
+anyhow = "1"
+axum = { version = "0.8", features = ["multipart"] }
+image = { version = "0.25", default-features = false, features = ["png"] }
+rayon = "1.11"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["fs", "macros", "process", "rt-multi-thread", "sync", "time"] }
+tower-http = { version = "0.6", features = ["fs", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+uuid = { version = "1", features = ["serde", "v4"] }
+walkdir = "2"
+zip = { version = "8", default-features = false, features = ["deflate"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

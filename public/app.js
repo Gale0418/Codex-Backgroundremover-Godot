@@ -214,33 +214,50 @@ function exportSettings() {
   };
 }
 
-async function pollJob() {
-  const response = await fetch(`/api/jobs/${currentJobId}`);
-  const result = await response.json();
-  const job = result.job;
-  log(`狀態：${job.status} · ${job.progress}%`);
-  if (job.status === "done") {
-    downloadLink.hidden = false;
-    downloadLink.href = job.result.downloadUrl;
-    downloadLink.download = "godot-sprite-sheet-export.zip";
-    downloadLink.textContent = "下載結果";
-    renderResult(job.result);
+async function pollJob(jobId) {
+  try {
+    const response = await fetch(`/api/jobs/${jobId}`);
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "讀取工作狀態失敗");
+    }
+    if (currentJobId !== jobId) return;
+
+    const job = result.job;
+    log(`狀態：${job.status} · ${job.progress}%`);
+    if (job.status === "done") {
+      downloadLink.hidden = false;
+      downloadLink.href = job.result.downloadUrl;
+      downloadLink.download = "godot-sprite-sheet-export.zip";
+      downloadLink.textContent = "下載結果";
+      renderResult(job.result);
+      exportButton.disabled = false;
+      videoFile.disabled = false;
+      return;
+    }
+    if (job.status === "failed") {
+      log(job.error || "匯出失敗");
+      exportButton.disabled = false;
+      videoFile.disabled = false;
+      return;
+    }
+    window.setTimeout(() => pollJob(jobId), 1000);
+  } catch (error) {
+    if (currentJobId !== jobId) return;
+    log(`狀態讀取失敗：${error.message}`);
     exportButton.disabled = false;
-    return;
+    videoFile.disabled = false;
   }
-  if (job.status === "failed") {
-    log(job.error || "匯出失敗");
-    exportButton.disabled = false;
-    return;
-  }
-  window.setTimeout(pollJob, 1000);
 }
 
 async function uploadVideo(file) {
-  const formData = new FormData();
-  formData.append("video", file);
+  currentJobId = null;
+  exportButton.disabled = true;
+  downloadLink.hidden = true;
   resetResult();
   log("上傳並讀取影片中...");
+  const formData = new FormData();
+  formData.append("video", file);
   const response = await fetch("/api/upload", {
     method: "POST",
     body: formData
@@ -259,30 +276,43 @@ async function uploadVideo(file) {
 videoFile.addEventListener("change", async () => {
   const file = videoFile.files?.[0];
   if (!file) return;
+  videoFile.disabled = true;
   try {
     await uploadVideo(file);
   } catch (error) {
+    currentJobId = null;
+    exportButton.disabled = true;
     log(error.message);
+  } finally {
+    videoFile.disabled = false;
   }
 });
 
 exportButton.addEventListener("click", async () => {
   if (!currentJobId) return;
+  const jobId = currentJobId;
   exportButton.disabled = true;
+  videoFile.disabled = true;
   downloadLink.hidden = true;
   resetResult();
-  const response = await fetch(`/api/jobs/${currentJobId}/export`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(exportSettings())
-  });
-  const result = await response.json();
-  if (!response.ok) {
-    log(result.error || "匯出失敗");
-    exportButton.disabled = false;
-    return;
+  try {
+    const response = await fetch(`/api/jobs/${jobId}/export`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(exportSettings())
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "匯出失敗");
+    }
+    await pollJob(jobId);
+  } catch (error) {
+    if (currentJobId === jobId) {
+      log(error.message);
+      exportButton.disabled = false;
+      videoFile.disabled = false;
+    }
   }
-  await pollJob();
 });
 
 mode.addEventListener("change", async () => {
